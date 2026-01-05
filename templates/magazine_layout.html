@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* [CSS 자동 적용] 디렉터가 정해준 폰트와 배경색을 적용합니다. */
+        body { background-color: {{ data.style.bg_color }}; }
+    </style>
+</head>
+<body class="{{ data.style.font_family }} text-gray-900">
+    <div class="max-w-4xl mx-auto py-10">
+
+        {% for block in data.content.blocks %}
+            
+            {% if block.type == "hero_cover" %}
+            <section class="mb-16 relative h-96 rounded-3xl overflow-hidden shadow-2xl">
+                <img src="data:image/png;base64,{{ images[block.img_id] }}" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-white">
+                    <h1 class="text-5xl font-bold">{{ block.headline }}</h1>
+                    <p class="mt-2 tracking-widest">PAGE {{ data.content.page }}</p>
+                </div>
+            </section>
+
+            {% elif block.type == "product_list" %}
+            <section class="mb-12 p-8 bg-white rounded-2xl border-l-8 shadow-sm" style="border-color: {{ data.style.primary_color }}">
+                <h2 class="text-2xl font-bold mb-6" style="color: {{ data.style.primary_color }}">{{ block.subtitle }}</h2>
+                <ul class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {% for item in block.product_list %}
+                    <li class="p-4 bg-gray-50 rounded-lg border border-gray-100 italic">
+                        {{ item }}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </section>
+
+            {% elif block.type == "text_essay" %}
+            <div class="mb-12 px-10 text-xl leading-relaxed text-gray-700 font-light italic text-center">
+                {{ block.text }}
+            </div>
+
+            {% endif %}
+        {% endfor %}
+
+    </div>
+
+    <footer class="text-center py-10 text-xs text-gray-400 border-t mt-10">
+        EDITOR {{ data.meta.editor }} | PHOTO {{ data.meta.photographer }}
+    </footer>
+</body>
+</html>
