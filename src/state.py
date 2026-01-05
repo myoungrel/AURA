@@ -1,20 +1,25 @@
 # src/state.py
-from typing import TypedDict, List, Annotated, Optional
+from typing import TypedDict, List, Annotated, Optional, Dict, Any
 import operator
 
 class MagazineState(TypedDict):
+    # --- [1. 입력 데이터] ---
     user_input: str
+    image_data: Optional[str]  # 처음엔 없을 수 있으니 Optional 필수!
     
-    # 👇 [수정] 이제 '경로' 대신 '데이터'를 직접 담을 거야!
-    image_data: Optional[str]  # Base64 인코딩된 이미지 문자열
+    # --- [2. 분석 및 보안] ---
+    intent: Optional[str]      # Router 돌기 전엔 없음
+    safety_check: Optional[str]
+    vision_result: Optional[Dict[str, Any]] # Vision 결과는 JSON(Dict)임!
     
-    intent: str
-    safety_check: str
-    vision_result: str
-    manuscript: str
-    design_plan: str
-    html_code: str
-    critique: str
-    final_output: str
+    # --- [3. 생성 데이터 (병렬 구간)] ---
+    manuscript: Optional[Dict[str, Any]]   
+    design_spec: Optional[Dict[str, Any]]  
     
+    # --- [4. 통합 및 검수] ---
+    html_code: Optional[str]
+    critique: Optional[str]
+    final_output: Optional[str]
+    
+    # --- [5. 로그 (병렬 안전)] ---
     logs: Annotated[List[str], operator.add]
