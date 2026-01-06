@@ -1,5 +1,7 @@
 import json
 import os
+import base64  # [추가]
+import io      # [추가]
 from PIL import Image
 import google.generativeai as genai
 from dotenv import load_dotenv
@@ -18,11 +20,11 @@ if not api_key:
 else:
     genai.configure(api_key=api_key)
 
-def run_vision_analysis(state):
+def run_vision(state):
     print("--- [Vision Agent] 이미지 정밀 분석 시작 (Gemini) ---")
     
     # State에서 이미지 경로와 사용자 텍스트 가져오기
-    image_path = state.get("image_path")
+    image_data = state.get("image_data")
     user_text = state.get("user_input", "")
 
     # 모델 설정 (Gemini 1.5 Flash 권장, 없으면 Pro 사용)
@@ -114,7 +116,14 @@ def run_vision_analysis(state):
     """
 
     try:
-        img = Image.open(image_path)
+        # 👇 [핵심 수정] Base64 문자열을 이미지로 변환하는 로직
+        # 1. Base64 디코딩
+        image_bytes = base64.b64decode(image_data)
+        
+        # 2. Bytes를 메모리 파일(IO)로 변환 후 PIL로 열기
+        img = Image.open(io.BytesIO(image_bytes))
+        
+        # 3. Gemini에게 전송
         response = model.generate_content([prompt, img])
         
         # JSON 정제

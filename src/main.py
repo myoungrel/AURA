@@ -27,6 +27,11 @@ def run_paginator_node(state: MagazineState) -> dict:
     # 1. 원고 가져오기
     manuscript = state.get("manuscript", {})
     
+    # [방어 코드] 원고가 없으면 빈 리스트 처리
+    if not manuscript:
+        print("⚠️ [Paginator] 원고(Manuscript)가 없습니다. 빈 페이지를 반환합니다.")
+        return {"pages": []}
+
     # 리스트 변환 (안전장치)
     if isinstance(manuscript, dict):
         articles = [manuscript]

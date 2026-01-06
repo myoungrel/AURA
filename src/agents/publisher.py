@@ -6,17 +6,28 @@ from PIL import Image
 from jinja2 import Environment, FileSystemLoader
 
 class PublisherAgent:
-    def __init__(self, template_path="../../templates"):
+    def __init__(self):
         """
         Publisher 에이전트 초기화
-        :param template_path: Jinja2 템플릿 파일이 위치한 경로
         """
-        self.current_dir = os.path.dirname(os.path.abspath(__file__))
-        self.template_dir = os.path.normpath(os.path.join(self.current_dir, template_path))
+        # 1. 경로 계산 (publisher.py 위치 기준)
+        self.current_dir = os.path.dirname(os.path.abspath(__file__)) # .../src/agents
         
-        # Jinja2 환경 설정
-        self.env = Environment(loader=FileSystemLoader(self.template_dir))
+        # 2. 프로젝트 루트로 이동 (src/agents -> src -> ProjectRoot)
+        self.project_root = os.path.dirname(os.path.dirname(self.current_dir))
+        
+        # 3. 템플릿 '폴더' 경로 설정 (파일명 제외!)
+        # 예: .../Final-Project/templates
+        self.template_dir = os.path.join(self.project_root, "templates")
+        
+        # 4. 템플릿 파일 이름 설정
         self.template_name = 'magazine_layout.html'
+        
+        # 디버깅용 출력
+        print(f"📂 Publisher Template Dir: {self.template_dir}")
+        
+        # Jinja2 환경 설정 (폴더 경로만 전달)
+        self.env = Environment(loader=FileSystemLoader(self.template_dir))
 
     def _optimize_image(self, image_data, max_width=1024):
         """
@@ -41,7 +52,7 @@ class PublisherAgent:
             img.save(buffer, format="JPEG", quality=75)
             return base64.b64encode(buffer.getvalue()).decode('utf-8')
         except Exception as e:
-            print(f"⚠️ 이미지 최적화 실패: {e}")
+            # print(f"⚠️ 이미지 최적화 실패: {e}") # 로그가 너무 많으면 주석 처리
             return image_data # 실패 시 원본 반환
 
     def _human_in_the_loop(self, state):
@@ -52,7 +63,7 @@ class PublisherAgent:
         print("🔍 [Publisher HITL] 최종 조립 전 검수를 시작합니다.")
         
         # 첫 번째 블록의 헤드라인을 검수 대상으로 지정
-        if 'blocks' in state['content'] and len(state['content']['blocks']) > 0:
+        if 'blocks' in state.get('content', {}) and len(state['content']['blocks']) > 0:
             current_headline = state['content']['blocks'][0].get('headline', 'N/A')
             print(f"현재 표지 문구: {current_headline}")
             
@@ -64,7 +75,7 @@ class PublisherAgent:
         print("="*50 + "\n")
         return state
 
-    def run(self, state, enable_hitl=True):
+    def run_process(self, state, enable_hitl=True):
         """
         에이전트 실행 메인 메서드
         :param state: Director/Editor로부터 전달받은 상태 데이터 (dict)
@@ -77,13 +88,13 @@ class PublisherAgent:
             state = self._human_in_the_loop(state)
 
         # 2. 이미지 최적화 처리
-        # state['images']에 담긴 모든 이미지를 순회하며 최적화
         if 'images' in state:
             for img_id, img_data in state['images'].items():
                 state['images'][img_id] = self._optimize_image(img_data)
 
         # 3. HTML 조립 (Rendering)
         try:
+            # 여기서 템플릿 파일 이름을 사용합니다.
             template = self.env.get_template(self.template_name)
             html_output = template.render(data=state, images=state.get('images', {}))
             
@@ -91,7 +102,7 @@ class PublisherAgent:
             state['final_html'] = html_output
             
             # 테스트를 위해 파일로도 저장 (선택 사항)
-            output_path = os.path.join(self.current_dir, "../../output/universal_result.html")
+            output_path = os.path.join(self.project_root, "output", "universal_result.html")
             os.makedirs(os.path.dirname(output_path), exist_ok=True)
             with open(output_path, "w", encoding="utf-8") as f:
                 f.write(html_output)
@@ -101,4 +112,15 @@ class PublisherAgent:
 
         except Exception as e:
             print(f"❌ 렌더링 에러: {e}")
+            # 에러 발생 시에도 빈 문자열이라도 반환하여 다음 단계 진행
+            state['final_html'] = f"<h3>Error: {e}</h3>"
             return state
+
+# ---------------------------------------------------------
+# [중요] 외부 파일(main.py)에서 import 할 수 있도록 함수 노출
+# ---------------------------------------------------------
+publisher_agent = PublisherAgent()
+
+def run_publisher(state):
+    # Streamlit(app.py) 실행 시 터미널 입력이 멈추는 것을 방지하기 위해 HITL은 끕니다.
+    return publisher_agent.run_process(state, enable_hitl=False)
