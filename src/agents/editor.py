@@ -12,6 +12,12 @@ def run_editor(state: MagazineState) -> dict:
     # 1. 데이터 추출
     user_request = state["user_input"]
     
+    # [sm수정/추가] 유저 직접 입력 본문 유무 확인 (A와 협의된 state 키값 사용)
+    # user_body_text가 있고, 일정 길이(예: 50자) 이상이면 '교정' 모드로 동작
+    user_body_text = state.get("user_body_text", "").strip()
+    is_direct_input = len(user_body_text) > 50
+    # ------------------------------------------------------------------
+
     vision_data = state.get("vision_result", {})
     if isinstance(vision_data, str):
         image_mood = vision_data 
@@ -25,8 +31,29 @@ def run_editor(state: MagazineState) -> dict:
     planner_data = state.get("planner_result", {})
     # Planner가 정해준 톤을 가져오고, 없으면 기본값 'Elegant'
     target_tone = planner_data.get("target_tone", "Elegant & Lyrical")
-
     planner_intent = state.get("intent", "General Magazine Article")
+
+    # [sm추가] 분기에 따른 프롬프트 명령어 설정------------------------------
+    if is_direct_input:
+        # 본문이 있는 경우: 교정 및 스타일 변환 모드
+        mode_instruction = """
+        MODE: Polish & Format (User provided a draft)
+        - The user has provided a full draft. DO NOT change the core facts or story.
+        - Your job is to improve the grammar, flow, and vocabulary to match the [Target Tone].
+        - Ensure it reads like a high-end magazine article while keeping the original meaning.
+        """
+        source_text = user_body_text
+    else:
+        # 본문이 없는 경우: 키워드 기반 생성 모드
+        mode_instruction = """
+        MODE: Creative Writing (User provided keywords/request)
+        - The user has provided keywords or a brief request. 
+        - Your job is to generate a full, captivating English magazine article from scratch.
+        - Expand on the ideas to create a rich narrative that fits the [Target Tone].
+        """
+        source_text = user_request
+    #------------------------------------------------------------------
+
 
     # ------------------------------------------------------------------
     # [프롬프트 설계 의도 - 개발자 참고용]
@@ -57,8 +84,9 @@ def run_editor(state: MagazineState) -> dict:
     prompt = ChatPromptTemplate.from_template(
         """
         You are a Professional Editor for a High-End English Magazine (like Kinfolk, Vogue, or Time).
-        Your task is to rewrite the [User Request] into a structured English article.
         
+        {mode_instruction}
+
         !!! CRITICAL RULE: ENGLISH OUTPUT ONLY !!!
         - The final output must be in **ENGLISH**.
         - Do NOT invent new fictional stories. Keep the facts intact.
@@ -114,8 +142,10 @@ def run_editor(state: MagazineState) -> dict:
     chain = prompt | llm | parser
     
     try:
+        #sm [수정] 분기에 따라 결정된 mode_instruction과 active_text를 전달
         manuscript = chain.invoke({
-            "user_request": user_request,
+            "mode_instruction": mode_instruction, #sm 새로 추가된 분기 지시어
+            "user_request": source_text,          #sm 상황에 맞는 텍스트(초안 vs 키워드) 전달
             "planner_intent": planner_intent,
             "image_mood": image_mood,
             "target_tone": target_tone, # Planner가 정해준 걸 그대로 주입
@@ -134,6 +164,8 @@ def run_editor(state: MagazineState) -> dict:
         
     return {
         "manuscript": manuscript,
-        # "logs": [f"Editor: '{manuscript.get('headline')}' (English) Completed"],
-        "logs": [f"Editor: Executed strategy '{target_tone}'"] # planner 들어오면 활성화
+        #[기존주석] "logs": [f"Editor: '{manuscript.get('headline')}' (English) Completed"],
+        #[기존코드] "logs": [f"Editor: Executed strategy '{target_tone}'"] # planner 들어오면 활성화
+       # [sm수정] 로그에 현재 어떤 모드로 실행되었는지 표시----------------------
+        "logs": [f"Editor: Executed '{target_tone}' (Mode: {'Polish' if is_direct_input else 'Create'})"]
     }
