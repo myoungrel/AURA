@@ -55,9 +55,13 @@ def run_safety(state: MagazineState) -> dict:
             result.reason += " [System] Email pattern detected via Regex."
 
     except Exception as e:
-        # 에러 발생 시 시스템 안전을 위해 비정상 종료 방지용 기본값 반환
+        # 🚨 [폴백] LLM 호출 실패 시 가장 보수적인(안전한) 판단을 내림
         print(f"❌ Safety Filter Error: {e}")
-        result = SafetyCheck(is_safe=False, reason="Safety check failed due to system error.", pii_detected=[])
+        result = SafetyCheck(
+            is_safe=False, 
+            reason="Safety check failed due to system error. (Fallback activated)",
+            pii_detected=[]
+        )
 
     print(f"🛡️ 안전성 결과: {'SAFE' if result.is_safe else 'UNSAFE'} (사유: {result.reason})")
 
