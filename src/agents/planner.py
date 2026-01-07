@@ -29,7 +29,7 @@ def run_planner(state: MagazineState) -> dict:
         - Title: {title}
         - User Request: {user_request}
         - Style Preference: {user_style}
-        - Safe Aareas / Subject Position: {safe_areas}
+        - Subject Position / Subject Position: {subject_pos}
 
         [LAYOUT MENU - Choose ONE based on Strategy]
         
@@ -51,7 +51,7 @@ def run_planner(state: MagazineState) -> dict:
             "selected_type": "String (One of the types above)",
             "concept_rationale": "Why you chose this type...",
             "layout_guide": {{ 
-                "text_position": "{safe_areas}", 
+                "text_position": "{subject_pos}", 
                 "font_theme": "Serif (Luxury) or Sans-serif (Modern)",
                 "background_color": "#HexCode (Only for Separated types, otherwise null)"
             }}
@@ -74,19 +74,19 @@ def run_planner(state: MagazineState) -> dict:
         strategy = v_res.get("layout_strategy", {}).get("recommendation", "Separated")
         metadata = v_res.get("metadata", {})
         img_mood = metadata.get("mood", "General")
-        safe_areas = metadata.get("dominant_position", "Center")
+        subject_pos = metadata.get("dominant_position", "Center")
 
-        print(f"🧠 기획 중... ID:{a_id} | 전략:{strategy} | 스타일:{style_pref} | 위치:{safe_areas}")
+        print(f"🧠 기획 중... ID:{a_id} | 전략:{strategy} | 스타일:{style_pref} | 위치:{subject_pos}")
 
         try:
-            # 👇 [수정됨] chain.invoke 안에 "safe_areas" 키 추가 (에러 해결)
+            # 👇 [수정됨] chain.invoke 안에 "subject_pos" 키 추가 (에러 해결)
             plan = chain.invoke({
                 "title": title_text,
                 "user_request": request_text,
                 "user_style": style_pref,
                 "img_mood": img_mood,
                 "strategy": strategy,
-                "safe_areas": safe_areas  # <--- [여기 추가 필수!] 이게 없어서 에러가 났습니다.
+                "subject_pos": subject_pos  # <--- [여기 추가 필수!] 이게 없어서 에러가 났습니다.
             })
             
             # ID별로 계획 저장
