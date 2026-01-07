@@ -84,40 +84,40 @@ def run_vision(state):
             4. **Small Hero + Clean Sky/Wall** = **OVERLAY** (Priority 4)
 
             **[JSON Data Structure]**
-            1. thought_process: [
-                "Step 1: Hero is 'Man'...",
-                "Step 2: The Man is located in the center and fills 70% of the frame...",
-                "Step 3: Background is white, BUT Step 2 (Central Portrait) overrides it...",
-                "Step 4: Decision 'Separated' to protect the subject."
-            ]
+            1. thought_process: [Step-by-step reasoning based on the tasks above]
             2. layout_strategy:
                 - recommendation: "Overlay" or "Separated"
-                - reason: "Central portrait requires separation despite clean background."
+                - reason: "Detailed reason for the choice"
             3. metadata: 
-                - mood, dominant_colors, lighting
-                - design_guide: text_contrast, font_recommendation
-                - dominant_position: "Left", "Right", "Center" 
-            4. safe_areas: [[ymin, xmin, ymax, xmax], ...] (Return [] if Separated)
+                - mood: "Visual mood keywords"
+                - dominant_colors: ["#Hex1", "#Hex2", "#Hex3"]
+                - lighting: "Lighting description"
+                - dominant_position: "Left", "Right", or "Center"
+                - design_guide: { "text_contrast": "Dark/Light", "font_recommendation": "Serif/Sans-serif" }
+                - composition_analysis: { "visual_weight": "...", "gaze_direction": "..." }
+                - texture_context: { "dominant_texture": "...", "seasonal_vibe": "..." }
+            4. safe_areas: [[ymin, xmin, ymax, xmax], ...] (Return [] if 'Separated')
 
             RETURN ONLY RAW JSON. NO MARKDOWN.
 
             **[JSON Response Example]**
             {{
                 "thought_process": [
-                    "Step 1: User request is about a 'Watch'.",
-                    "Step 2: Found the Watch on the right side.",
-                    "Step 3: The large object on the left is a white Seashell (Prop).",
-                    "Step 4: The shell's surface is white and smooth.",
-                    "Step 5: Choosing 'Overlay' to place text on the shell."
+                    "Step 1: Hero is 'Watch'.",
+                    "Step 2: Watch is on the right side, not central. Not a macro shot.",
+                    "Step 3: Background is a large white seashell on the left.",
+                    "Step 4: The seashell provides a clean, uniform 'canvas' for text.",
+                    "Step 5: Decision 'Overlay' to utilize the negative space on the seashell."
                 ],
                 "layout_strategy": {{
                     "recommendation": "Overlay",
-                    "reason": "Although the shell is large, it serves as a smooth, uniform background prop for the watch (Hero)."
+                    "reason": "The subject is off-center, and the uniform texture of the prop on the left provides an ideal surface for text overlay."
                 }},
                 "metadata": {{
                     "mood": "Oceanic, Luxury",
                     "dominant_colors": ["#F5F5F5", "#003366", "#111111"],
                     "lighting": "Soft studio light",
+                    "dominant_position": "Right",
                     "design_guide": {{
                         "text_contrast": "Dark",
                         "font_recommendation": "Sans-serif"
@@ -131,9 +131,9 @@ def run_vision(state):
                         "seasonal_vibe": "Summer"
                     }}
                 }},
-                "safe_areas": [[100, 50, 800, 500]],
+                "safe_areas": [[100, 50, 800, 500]]
             }}
-            
+
             RETURN ONLY RAW JSON. DO NOT USE MARKDOWN.
             """
         
