@@ -57,7 +57,7 @@ def generate_magazine(payload: MagazineRequest):
             user_inputs.append({
                 "id": art.id,
                 "title": art.title,
-                "request": art.request,
+                "user_request": art.request,
                 "style": art.style,
                 "is_generated": art.is_generated
             })
