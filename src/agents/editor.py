@@ -37,17 +37,27 @@ def run_editor(state: MagazineState) -> dict:
         - Image Context: {image_desc} (Use for Caption)
         - Layout Type: {layout_type}
 
-            [Directives]
+        [Directives]
         1. **Tone Reference (Style Guide)**:
-            Use these definitions to apply the [Planner Strategy]. Do not force this style if the original text is already acceptable.
-            - **(A) Elegant & Lyrical**: Poetic, flowing, sophisticated.
-            - **(B) Bold & Energetic**: Punchy, active voice, strong verbs.
-            - **(C) Analytical & Professional**: Precise, objective, logic-focused.
-            - **(D) Friendly & Conversational**: Warm, inviting, uses "You".
-            - **(E) Witty & Satirical**: Clever wordplay, sharp humor.
-            - **(F) Dramatic & Cinematic**: Suspenseful, emotional, sensory.
-            - **(G) Minimalist & Clean**: Concise, dry, direct.
-            - **(H) Nostalgic & Warm**: Evocative, cozy, retro.
+            Match the tone to the [Planner Strategy]. Planner uses TYPE codes:
+            
+            **Primary Types (from Planner)**:
+            - **TYPE_FASHION_COVER**: Elegant & Lyrical - Poetic, flowing, sophisticated
+            - **TYPE_STREET_VIBE**: Bold & Energetic - Punchy, active voice, strong verbs
+            - **TYPE_EDITORIAL_SPLIT**: Analytical & Professional - Precise, objective, logic-focused
+            - **TYPE_LUXURY_PRODUCT**: Minimalist & Clean - Concise, dry, direct
+            
+            **Fallback Styles (if user provides direct preference)**:
+            - **Elegant**: Poetic, flowing, sophisticated
+            - **Bold**: Punchy, active voice, strong verbs
+            - **Analytical**: Precise, objective, logic-focused
+            - **Friendly**: Warm, inviting, uses "You"
+            - **Witty**: Clever wordplay, sharp humor
+            - **Dramatic**: Suspenseful, emotional, sensory
+            - **Minimalist**: Concise, dry, direct
+            - **Nostalgic**: Evocative, cozy, retro
+            
+            **IMPORTANT**: Do not force this style if the original text is already acceptable.
 
         2. **Smart Captioning (The Bridge)**:
             - **Rule**: Do NOT mention the image in the 'Body'.

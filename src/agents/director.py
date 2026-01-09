@@ -30,10 +30,23 @@ def run_director(state: MagazineState) -> dict:
         - **Font Idea**: {font_vibe}
 
         [Design Rules (Few-Shot)]
-        Apply the style strictly based on the Strategy Type:
-        - **Elegant**: Serif fonts (Playfair Display, Crimson Text), High contrast, Overlay opacity 0.3
-        - **Bold**: Sans-Serif (Oswald, Bebas Neue), Vivid accent colors, Italic headlines
-        - **Analytical**: Clean Sans-Serif (Roboto, Inter), Grid layout, High legibility
+        Apply the style strictly based on the Strategy Type from Planner.
+        Planner uses TYPE codes. Match them to these design guidelines:
+        
+        **Primary Types (from Planner)**:
+        - **TYPE_FASHION_COVER**: Classic magazine cover style
+          → Serif fonts (Playfair Display, Crimson Text), High contrast, Overlay opacity 0.3
+        - **TYPE_STREET_VIBE**: Hip and trendy street style
+          → Sans-Serif (Oswald, Bebas Neue), Vivid accent colors, Italic headlines
+        - **TYPE_EDITORIAL_SPLIT**: Professional editorial layout
+          → Clean Sans-Serif (Roboto, Inter), Grid layout, High legibility
+        - **TYPE_LUXURY_PRODUCT**: Minimalist luxury product showcase
+          → Modern Sans (Inter, Work Sans), Huge whitespace, Small typography
+        
+        **Fallback Styles (if user provides direct preference)**:
+        - **Elegant**: Serif fonts, High contrast, Overlay opacity 0.3
+        - **Bold**: Sans-Serif, Vivid colors, Italic headlines
+        - **Analytical**: Clean Sans-Serif, Grid, High legibility
         - **Friendly**: Rounded Sans (Nunito, Quicksand), Pastel tones, Card layout
         - **Witty**: Retro Serif (Merriweather, Courier Prime), Brutalist layout, Stark borders
         - **Dramatic**: Cinematic Serif (Cinzel, Cormorant), Dark mode, High fade gradients
