@@ -19,19 +19,50 @@ def run_editor(state: MagazineState) -> dict:
     # 프롬프트 정의
     prompt = ChatPromptTemplate.from_template(
         """
-        You are a Professional Editor for a High-End English Magazine.
+        You are a Professional Editor for a High-End English Magazine (like Kinfolk, Vogue, or Time).
         
         {mode_instruction}
 
-        !!! CRITICAL RULE: ENGLISH OUTPUT ONLY !!!
-        - The final output must be in **ENGLISH**.
-        - Do NOT invent new fictional stories. Keep the facts intact.
+        !!! CRITICAL RULES !!!
+        1. **ENGLISH OUTPUT ONLY**: The final result must be in **ENGLISH**.
+        2. **PRIMARY TASK**: Correct spelling, grammar, punctuation, and spacing errors.
+        3. **NO HALLUCINATIONS**: Do NOT invent new fictional stories, entities, places, dates, or numbers. Keep the facts intact.
+        4. **NO EMOJIS**: High-end magazines do not use emojis. Even if the source has them, or if you aim for a friendly tone, NEVER use emojis.
+        5. **TONE POLICY**: Preserve the user's original voice and style as much as possible.
+        6. **EXCEPTION**: ONLY modify the tone if the current text is **critically mismatched** with the [Planner Strategy] (e.g., Slang in a Medical article). Otherwise, keep it as is.
 
         [Input Data]
-        - Usre Request: {user_request}
+        - User Request: {user_request}
         - Planner Strategy: {target_tone}
         - Image Context: {image_desc} (Use for Caption)
         - Layout Type: {layout_type}
+
+            [Directives]
+        1. **Tone Reference (Style Guide)**:
+            Use these definitions to apply the [Planner Strategy]. Do not force this style if the original text is already acceptable.
+            - **(A) Elegant & Lyrical**: Poetic, flowing, sophisticated.
+            - **(B) Bold & Energetic**: Punchy, active voice, strong verbs.
+            - **(C) Analytical & Professional**: Precise, objective, logic-focused.
+            - **(D) Friendly & Conversational**: Warm, inviting, uses "You".
+            - **(E) Witty & Satirical**: Clever wordplay, sharp humor.
+            - **(F) Dramatic & Cinematic**: Suspenseful, emotional, sensory.
+            - **(G) Minimalist & Clean**: Concise, dry, direct.
+            - **(H) Nostalgic & Warm**: Evocative, cozy, retro.
+
+        2. **Smart Captioning (The Bridge)**:
+            - **Rule**: Do NOT mention the image in the 'Body'.
+            - **Task**: Write a separate 'Caption' connecting the [Image Context] with the core theme of the text.
+            - **Length**: Max 15 words.
+            - **Formula**: "[Visual Detail from Image], [Connection Verb] the article's theme of [Core Topic]."
+            - **Example**: "The golden sunset at Uluwatu, reflecting the article's theme of inner peace."
+
+        3. **Adaptive Formatting (Crucial for Layout)**:
+            - **Headline**: Max 7 words. Catchy.
+            - **Body Structure**: Adapt based on {layout_type}.
+                - **If {layout_type} is Long-form (e.g., Feature, Essay)**: Keep the length. Break into readable paragraphs using double line breaks (\\n\\n).
+                - **If {layout_type} is Short-form (e.g., Editorial, Brief)**: Concise paragraphs. No fluff. Direct impact.
+                - **If {layout_type} is Interview**: Strictly maintain the Question & Answer format.
+            - **Output**: JSON format ONLY. Do not include markdown tags.
 
         [Output JSON format]
         {{
@@ -48,11 +79,11 @@ def run_editor(state: MagazineState) -> dict:
     chain = prompt | llm | parser
 
     for a_id, article in articles.items():
-        # [Dependency Check]
+        # [Dependency Check] Planner 데이터 존재 여부 확인
         plan = article.get("plan")
         if not plan:
-            print(f"⚠️ [Editor] 기사 ID {a_id}: Planner가 실행되지 않았습니다.")
-            plan = {}
+            print(f"⚠️ [Editor] 기사 ID {a_id}: Planner가 실행되지 않아 기본 설정으로 진행합니다.")
+            plan = {} # 빈 딕셔너리로 초기화하여 에러 방지
 
         # 데이터 로드
         req_text = article.get("request", "")
@@ -78,13 +109,18 @@ def run_editor(state: MagazineState) -> dict:
             continue
 
         # --- [Case 2: AI 자동 생성] ---
-        # 모드 결정 (긴 텍스트: 교정 / 짧은 텍스트: 생성)
+        # 모드 결정 (긴 텍스트: 교정 / 짧은 텍스트: 생성) , 프롬프트에 들여쓰기는 토큰 비효율이래.
         is_polish_mode = len(req_text.strip()) > 50
         
         if is_polish_mode:
-            mode_instruction = "MODE: Proofreading & Minor Fixes. Improve grammar/flow."
+            mode_instruction = """MODE: Proofreading & Minor Fixes (User provided a draft)
+- Preserve the original meaning and nuances.
+- Focus strictly on correcting grammar, spelling, and phrasing.
+- Only adjust the tone if it is critically mismatched."""
         else:
-            mode_instruction = "MODE: Creative Writing. Generate full article from keywords."
+            mode_instruction ="""MODE: Creative Writing (User provided keywords)
+- Generate a full, captivating magazine article from scratch.
+- Expand on ideas to create a rich narrative fitting the target tone."""
 
         print(f"✍️ Editor 작성 중... ID:{a_id} | 모드:{'Polish' if is_polish_mode else 'Create'}")
 
