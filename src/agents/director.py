@@ -20,30 +20,65 @@ def run_director(state: MagazineState) -> dict:
     prompt = ChatPromptTemplate.from_template(
         """
         You are a World-Class Art Director & UI/UX Designer.
-        Create a **JSON Design Specification (SDUI)** based on the inputs.
+        Create a **JSON Design Specification (SDUI)** based on the input Strategy and Visual Analysis.
         
         [Input Data]
-        - Layout Mode: {layout_mode}
-        - Strategy Type: {target_tone}
-        - Extracted Colors: {extracted_colors}
-        - Safe Areas: {safe_areas}
-        - Font Vibe: {font_vibe}
+        - **Layout Mode**: {layout_mode}
+        - **Design Strategy (Type)**: {target_tone}
+        - **Extracted Colors**: {extracted_colors}
+        - **Safe Areas**: {safe_areas}
+        - **Font Idea**: {font_vibe}
 
-        [Output JSON format]
+        [Design Rules (Few-Shot)]
+        Apply the style strictly based on the Strategy Type:
+        - **Elegant**: Serif fonts (Playfair Display, Crimson Text), High contrast, Overlay opacity 0.3
+        - **Bold**: Sans-Serif (Oswald, Bebas Neue), Vivid accent colors, Italic headlines
+        - **Analytical**: Clean Sans-Serif (Roboto, Inter), Grid layout, High legibility
+        - **Friendly**: Rounded Sans (Nunito, Quicksand), Pastel tones, Card layout
+        - **Witty**: Retro Serif (Merriweather, Courier Prime), Brutalist layout, Stark borders
+        - **Dramatic**: Cinematic Serif (Cinzel, Cormorant), Dark mode, High fade gradients
+        - **Minimalist**: Modern Sans (Inter, Work Sans), Huge whitespace, Small typography
+        - **Nostalgic**: Retro font (Courier Prime, Special Elite), Sepia/Grainy filters, Polaroid style
+
+        [Critical Instructions]
+        1. **Color Selection**: Choose the most vibrant color from [Extracted Colors] as 'primary'. ALL colors MUST be valid HEX codes (e.g., #FF5733).
+        2. **Font Selection**: Use actual font names with fallbacks (e.g., "Playfair Display, serif").
+        3. **Layout**: Analyze [Safe Areas] for text alignment.
+        4. **Variety**: Adapt all styling values to match the strategy - avoid repetitive choices.
+
+        [Output Requirements]
+        Return ONLY valid JSON. Replace ALL angle-bracket placeholders with actual computed values.
+
         {{
-            "layout_strategy": "hero_overlay_smart",
+            "layout_strategy": "<hero_overlay_smart or separated_grid or magazine_column>",
             "theme": {{
                 "mood": "{target_tone}",
-                "colors": {{ "primary": "Hex", "text_main": "Hex" }},
-                "fonts": {{ "title": "...", "body": "..." }}
+                "colors": {{
+                    "primary": "<most vibrant HEX from extracted_colors>",
+                    "text_main": "<#FFFFFF for dark bg or #000000 for light bg>",
+                    "text_sub": "<complementary HEX>"
+                }},
+                "fonts": {{
+                    "title": "<Font Name, fallback>",
+                    "body": "<Font Name, fallback>"
+                }}
             }},
             "layout_config": {{
-                "text_alignment": "left/right/center",
-                "overlay_opacity": "0.5"
+                "text_alignment": "<text-left or text-right or text-center>",
+                "overlay_opacity": "<bg-black/20 to bg-black/70>"
             }},
             "components_style": {{
-                "content_box": {{ "bg_color": "...", "padding": "..." }},
-                "headline": {{ "size": "text-6xl" }}
+                "content_box": {{
+                    "bg_color": "<bg-black/XX or bg-white/XX>",
+                    "padding": "<p-4 to p-12>",
+                    "border_radius": "<rounded-none to rounded-3xl>",
+                    "backdrop_blur": "<backdrop-blur-none to backdrop-blur-xl>",
+                    "shadow": "<shadow-none to shadow-2xl>"
+                }},
+                "headline": {{
+                    "size": "<text-4xl to text-7xl, use responsive>",
+                    "weight": "<font-normal to font-black>"
+                }}
             }}
         }}
         """
