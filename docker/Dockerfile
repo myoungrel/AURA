@@ -17,6 +17,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY ../*.py .
 COPY ../static ./static
 COPY ../datas ./datas
+COPY ../tool ./tool
 
 # 비root 사용자 생성 및 권한 설정
 RUN useradd -m -u 1000 aura && \
