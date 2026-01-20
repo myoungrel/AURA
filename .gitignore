@@ -213,3 +213,10 @@ output/*
 # Windows Zone.Identifier files
 *:Zone.Identifier
 
+# Chroma / vector DB (local cache)
+chroma_db_voyage/
+**/chroma.sqlite3
+**/*.sqlite3
+**/*.sqlite3-wal
+**/*.sqlite3-shm
+
