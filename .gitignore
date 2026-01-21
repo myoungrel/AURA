@@ -220,3 +220,4 @@ chroma_db_voyage/
 **/*.sqlite3-wal
 **/*.sqlite3-shm
 
+deploy.sh
