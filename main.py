@@ -87,6 +87,57 @@ async def logout(request: Request):
     print(f"👋 User '{username}' logged out")
     return RedirectResponse(url="/login", status_code=302)
 
+@app.get("/signup")
+async def signup_page():
+    """Serve signup page"""
+    return FileResponse('static/signup.html')
+
+@app.post("/signup")
+async def signup(request: Request):
+    """Handle signup POST request"""
+    try:
+        data = await request.json()
+        username = data.get("username", "").strip()
+        email = data.get("email", "").strip()
+        password = data.get("password", "")
+        
+        # Validation
+        if len(username) < 3:
+            return JSONResponse(
+                {"status": "error", "message": "Username must be at least 3 characters"}, 
+                status_code=400
+            )
+        
+        if len(password) < 6:
+            return JSONResponse(
+                {"status": "error", "message": "Password must be at least 6 characters"}, 
+                status_code=400
+            )
+        
+        # Check if username already exists
+        if username in VALID_CREDENTIALS:
+            return JSONResponse(
+                {"status": "error", "message": "Username already exists"}, 
+                status_code=409
+            )
+        
+        # Add new user to credentials (in-memory, will reset on restart)
+        VALID_CREDENTIALS[username] = password
+        print(f"✅ New user registered: {username} (email: {email})")
+        
+        return JSONResponse({
+            "status": "success", 
+            "message": "Account created successfully"
+        })
+        
+    except Exception as e:
+        print(f"❌ Signup error: {e}")
+        return JSONResponse(
+            {"status": "error", "message": "Server error"}, 
+            status_code=500
+        )
+
+
 @app.get("/")
 async def read_index(request: Request):
     """Main page - requires authentication"""
